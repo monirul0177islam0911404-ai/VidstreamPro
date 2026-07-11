@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0a0a">
+    <title>VidStream Pro • Admin Panel</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1e1e1e;
+            --bg-glass: rgba(20, 20, 20, 0.9);
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --accent: #ff3b5c;
+            --accent-hover: #ff5a75;
+            --green: #4caf84;
+            --blue: #4a9eff;
+            --yellow: #ffb347;
+            --red: #ff4757;
+            --border: rgba(255, 255, 255, 0.08);
+            --radius-sm: 10px;
+            --radius-md: 16px;
+            --radius-lg: 22px;
+            --radius-full: 9999px;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        /* LOGIN */
+        #login-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .login-box {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .login-box h2 {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--accent), #ff6b8a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .login-box p { text-align: center; color: var(--text-secondary); margin-bottom: 24px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 6px; font-size: 0.85rem; color: var(--text-secondary); font-weight: 500; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.05);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            outline: none;
+            transition: 0.2s;
+        }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(255,59,92,0.2);
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            background: var(--accent);
+            color: #fff;
+        }
+        .btn:hover { background: var(--accent-hover); transform: translateY(-2px); }
+        .btn-sm { width: auto; padding: 8px 18px; font-size: 0.85rem; border-radius: 20px; }
+        .btn-danger { background: var(--red); }
+        .btn-secondary { background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border); }
+        .error-msg { color: #ff4757; text-align: center; margin-top: 10px; display: none; }
+        .success-msg { color: var(--green); text-align: center; margin-top: 10px; display: none; }
+
+        /* DASHBOARD */
+        #dashboard-screen { display: none; }
+        #dashboard-screen.active { display: flex; }
+        .sidebar {
+            width: 260px;
+            min-height: 100vh;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            padding: 20px 0;
+            transition: transform 0.3s;
+        }
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 800;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sidebar-nav { padding: 10px 0; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-primary);
+            border-left-color: var(--accent);
+        }
+        .sidebar-footer { padding: 20px; border-top: 1px solid var(--border); margin-top: auto; }
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 24px;
+            min-height: 100vh;
+        }
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .stat-icon { font-size: 2.2rem; }
+        .stat-value { font-size: 1.6rem; font-weight: 800; }
+        .stat-label { font-size: 0.8rem; color: var(--text-secondary); }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px 8px;
+            border-bottom: 1px solid var(--border);
+        }
+        th { color: var(--text-secondary); font-weight: 600; }
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: var(--bg-tertiary);
+            display: inline-block;
+        }
+        .badge-success { background: var(--green); color: #fff; }
+        .flex-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            padding: 12px 20px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            z-index: 9999;
+            animation: slideIn 0.3s;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .menu-toggle { display: block; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+    <div class="login-box">
+        <h2>🎬 VidStream Pro</h2>
+        <p>Admin Panel Login</p>
+        <div class="form-group">
+            <label>📧 Email</label>
+            <input type="email" id="login-email" placeholder="admin@vidstream.com">
+        </div>
+        <div class="form-group">
+            <label>🔒 Password</label>
+            <input type="password" id="login-password" placeholder="Enter password">
+        </div>
+        <button class="btn" id="login-btn">Login</button>
+        <div class="error-msg" id="error-msg"></div>
+        <div class="success-msg" id="success-msg"></div>
+    </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard-screen">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">🎬 VidStream Pro</div>
+        <nav class="sidebar-nav">
+            <div class="nav-item active" data-page="dashboard">📊 Dashboard</div>
+            <div class="nav-item" data-page="videos">🎬 Video Upload</div>
+            <div class="nav-item" data-page="video-list">📋 Video List</div>
+            <div class="nav-item" data-page="ads">💰 Ad Settings</div>
+            <div class="nav-item" data-page="categories">📂 Categories</div>
+            <div class="nav-item" data-page="users">👥 Users</div>
+            <div class="nav-item" data-page="comments">💬 Comments</div>
+            <div class="nav-item" data-page="settings">⚡ Settings</div>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="btn btn-danger btn-sm" id="logout-btn" style="width:100%;">🚪 Logout</button>
+        </div>
+    </aside>
+    <main class="main-content">
+        <div class="topbar">
+            <div class="flex-row">
+                <button class="menu-toggle" id="menu-toggle">☰</button>
+                <h2 id="page-title">Dashboard</h2>
+            </div>
+            <span id="user-email" style="color:var(--text-secondary);"></span>
+        </div>
+        <div id="page-content"></div>
+    </main>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+// ============ CONFIG ============
+const firebaseConfig = {
+    apiKey: "AIzaSyBg-Og3zeSeel6OSCUyM_hqId0c8ADrYYg",
+  authDomain: "vid-stream-dc255.firebaseapp.com",
+  databaseURL: "https://vid-stream-dc255-default-rtdb.firebaseio.com",
+  projectId: "vid-stream-dc255",
+  storageBucket: "vid-stream-dc255.firebasestorage.app",
+  messagingSenderId: "162709804261",
+  appId: "1:162709804261:web:5ef91eeb93cc61d616700c",
+  measurementId: "G-MHYRKFCMLE"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// ============ STATE ============
+let currentUser = null;
+
+// ============ DOM ============
+const loginScreen = document.getElementById('login-screen');
+const dashboardScreen = document.getElementById('dashboard-screen');
+const pageTitle = document.getElementById('page-title');
+const pageContent = document.getElementById('page-content');
+const userEmail = document.getElementById('user-email');
+const sidebar = document.getElementById('sidebar');
+
+// ============ UTILS ============
+function showToast(msg, type='info') {
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    t.style.borderLeft = `3px solid ${type==='error'?'#ff4757':type==='success'?'#4caf84':'#4a9eff'}`;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2500);
+}
+function formatNumber(n) {
+    if (!n) return '0';
+    if (n >= 1000000) return (n/1000000).toFixed(1)+'M';
+    if (n >= 1000) return (n/1000).toFixed(1)+'K';
+    return n.toString();
+}
+function timeAgo(ts) {
+    if (!ts) return '';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    const diff = Date.now() - d.getTime();
+    const m = Math.floor(diff/60000);
+    if (m < 1) return 'Just now';
+    if (m < 60) return m+'m';
+    const h = Math.floor(diff/3600000);
+    if (h < 24) return h+'h';
+    return d.toLocaleDateString();
+}
+function generateId() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2,9);
+}
+
+// ============ AUTH ============
+async function checkAdmin(user) {
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    return snap.exists() && snap.data().role === 'admin';
+}
+function showDashboard() {
+    loginScreen.style.display = 'none';
+    dashboardScreen.classList.add('active');
+}
+function showLogin() {
+    loginScreen.style.display = 'flex';
+    dashboardScreen.classList.remove('active');
+}
+document.getElementById('login-btn').addEventListener('click', async () => {
+    const email = document.getElementById('login-email').value.trim();
+    const pass = document.getElementById('login-password').value;
+    if (!email || !pass) return;
+    try {
+        const cred = await signInWithEmailAndPassword(auth, email, pass);
+        if (await checkAdmin(cred.user)) {
+            currentUser = cred.user;
+            userEmail.textContent = cred.user.email;
+            showDashboard();
+            loadPage('dashboard');
+        } else {
+            await signOut(auth);
+            alert('Access Denied! Not admin.');
+        }
+    } catch (e) {
+        alert('Login failed: ' + e.message);
+    }
+});
+document.getElementById('logout-btn').addEventListener('click', async () => {
+    await signOut(auth);
+    showLogin();
+});
+onAuthStateChanged(auth, async (user) => {
+    if (user && await checkAdmin(user)) {
+        currentUser = user;
+        userEmail.textContent = user.email;
+        showDashboard();
+        loadPage('dashboard');
+    } else {
+        showLogin();
+    }
+});
+
+// ============ NAVIGATION ============
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        loadPage(item.dataset.page);
+        if (window.innerWidth < 768) sidebar.classList.remove('open');
+    });
+});
+document.getElementById('menu-toggle').addEventListener('click', () => sidebar.classList.toggle('open'));
+
+async function loadPage(page) {
+    pageTitle.textContent = page.charAt(0).toUpperCase() + page.slice(1).replace('-', ' ');
+    pageContent.innerHTML = '<p style="text-align:center;padding:40px;">Loading...</p>';
+    
+    switch(page) {
+        case 'dashboard': await loadDashboard(); break;
+        case 'videos': await loadVideoUpload(); break;
+        case 'video-list': await loadVideoList(); break;
+        case 'ads': await loadAdSettings(); break;
+        case 'categories': await loadCategories(); break;
+        case 'users': await loadUsers(); break;
+        case 'comments': await loadComments(); break;
+        case 'settings': await loadSettings(); break;
+    }
+}
+
+// ============ DASHBOARD ============
+async function loadDashboard() {
+    const vSnap = await getDocs(collection(db, 'videos'));
+    const uSnap = await getDocs(collection(db, 'users'));
+    let views = 0;
+    vSnap.forEach(d => views += d.data().views || 0);
+    pageContent.innerHTML = `
+    <div class="stats-grid">
+        <div class="stat-card"><span class="stat-icon">🎬</span><div><div class="stat-value">${vSnap.size}</div><div class="stat-label">Total Videos</div></div></div>
+        <div class="stat-card"><span class="stat-icon">👥</span><div><div class="stat-value">${uSnap.size}</div><div class="stat-label">Users</div></div></div>
+        <div class="stat-card"><span class="stat-icon">👁️</span><div><div class="stat-value">${formatNumber(views)}</div><div class="stat-label">Total Views</div></div></div>
+    </div>
+    <div class="card"><p>Welcome to VidStream Pro Admin Panel!</p></div>`;
+}
+
+// ============ VIDEO UPLOAD (URL based) ============
+async function loadVideoUpload() {
+    const catSnap = await getDocs(collection(db, 'categories'));
+    const cats = [];
+    catSnap.forEach(d => cats.push(d.data().name));
+    
+    pageContent.innerHTML = `
+    <div class="card">
+        <div class="section-title">📤 Upload New Video (URL)</div>
+        
+        <div class="form-group">
+            <label>🎬 Video Title *</label>
+            <input type="text" id="v-title" placeholder="Enter video title" required>
+        </div>
+        
+        <div class="form-group">
+            <label>📝 Description</label>
+            <textarea id="v-desc" rows="3" placeholder="Video description"></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>🖼️ Thumbnail URL *</label>
+            <input type="url" id="v-thumb-url" placeholder="https://example.com/thumbnail.jpg">
+            <small style="color:var(--text-secondary);">Use any image URL (imgur, cloudinary, etc.)</small>
+        </div>
+        
+        <div class="form-group">
+            <label>🎥 Video URL (MP4 Link) *</label>
+            <input type="url" id="v-video-url" placeholder="https://example.com/video.mp4">
+            <small style="color:var(--text-secondary);">Direct MP4 video link</small>
+        </div>
+        
+        <div class="form-group">
+            <label>📂 Category</label>
+            <select id="v-cat">
+                <option value="">Select category</option>
+                ${cats.map(c => `<option value="${c}">${c}</option>`).join('')}
+                <option value="Education">Education</option>
+                <option value="Entertainment">Entertainment</option>
+                <option value="Music">Music</option>
+                <option value="Technology">Technology</option>
+                <option value="Sports">Sports</option>
+                <option value="News">News</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>🏷️ Tags (comma separated)</label>
+            <input type="text" id="v-tags" placeholder="tag1, tag2, tag3">
+        </div>
+        
+        <div class="form-group">
+            <label>⏱️ Video Duration (minutes)</label>
+            <input type="number" id="v-duration" placeholder="10" min="1" required>
+            <small style="color:var(--text-secondary);">Total video length in minutes</small>
+        </div>
+        
+        <div class="form-group">
+            <label>💰 Mid-roll Ad Timing (minutes)</label>
+            <input type="text" id="v-ad-timings" placeholder="5, 10, 15">
+            <small style="color:var(--text-secondary);">Comma separated minutes when ads will show. Example: 5, 10, 15</small>
+        </div>
+        
+        <div class="form-group">
+            <label>👁️ Visibility</label>
+            <select id="v-vis">
+                <option value="published">Published</option>
+                <option value="private">Private</option>
+                <option value="unlisted">Unlisted</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>
+                <input type="checkbox" id="v-featured"> ⭐ Featured Video
+            </label>
+            <label style="margin-left:16px;">
+                <input type="checkbox" id="v-trending"> 🔥 Trending Video
+            </label>
+        </div>
+        
+        <button class="btn" id="upload-video-btn">🚀 Upload Video</button>
+        <div id="upload-status" style="margin-top:10px;text-align:center;"></div>
+    </div>`;
+    
+    document.getElementById('upload-video-btn').addEventListener('click', async () => {
+        const title = document.getElementById('v-title').value.trim();
+        const thumbUrl = document.getElementById('v-thumb-url').value.trim();
+        const videoUrl = document.getElementById('v-video-url').value.trim();
+        const duration = parseInt(document.getElementById('v-duration').value) || 0;
+        const adTimings = document.getElementById('v-ad-timings').value.trim();
+        
+        if (!title || !thumbUrl || !videoUrl || !duration) {
+            return alert('Please fill all required fields (Title, Thumbnail URL, Video URL, Duration)');
+        }
+        
+        const status = document.getElementById('upload-status');
+        status.innerHTML = '⏳ Saving video...';
+        
+        try {
+            const videoId = generateId();
+            const adMinutes = adTimings ? adTimings.split(',').map(m => parseInt(m.trim())).filter(m => !isNaN(m)) : [];
+            
+            await setDoc(doc(db, 'videos', videoId), {
+                title,
+                description: document.getElementById('v-desc').value,
+                thumbnailUrl: thumbUrl,
+                videoUrl: videoUrl,
+                category: document.getElementById('v-cat').value,
+                tags: document.getElementById('v-tags').value,
+                duration: duration,
+                adTimings: adMinutes,
+                visibility: document.getElementById('v-vis').value,
+                featured: document.getElementById('v-featured').checked,
+                trending: document.getElementById('v-trending').checked,
+                views: 0,
+                likes: 0,
+                createdAt: serverTimestamp(),
+                uploadedBy: currentUser.uid
+            });
+            
+            status.innerHTML = '✅ Video uploaded successfully!';
+            showToast('Video uploaded!', 'success');
+            document.getElementById('v-title').value = '';
+            document.getElementById('v-desc').value = '';
+            document.getElementById('v-thumb-url').value = '';
+            document.getElementById('v-video-url').value = '';
+            document.getElementById('v-duration').value = '';
+            document.getElementById('v-ad-timings').value = '';
+            document.getElementById('v-tags').value = '';
+        } catch (e) {
+            status.innerHTML = '❌ Error: ' + e.message;
+            showToast('Upload failed', 'error');
+        }
+    });
+}
+
+// ============ VIDEO LIST ============
+async function loadVideoList() {
+    const snap = await getDocs(query(collection(db, 'videos'), orderBy('createdAt', 'desc'), limit(50)));
+    const videos = [];
+    snap.forEach(d => videos.push({ id: d.id, ...d.data() }));
+    
+    pageContent.innerHTML = `
+    <div class="card">
+        <div class="section-title">📋 All Videos (${videos.length})</div>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Thumb</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Duration</th>
+                        <th>Ad Timings</th>
+                        <th>Views</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${videos.map(v => `
+                    <tr>
+                        <td><img src="${v.thumbnailUrl}" width="60" height="34" style="object-fit:cover;border-radius:4px;" onerror="this.style.display='none'"></td>
+                        <td>${v.title || 'Untitled'}</td>
+                        <td>${v.category || 'General'}</td>
+                        <td>${v.duration || 0} min</td>
+                        <td>${(v.adTimings || []).join(', ') || 'None'}</td>
+                        <td>${formatNumber(v.views)}</td>
+                        <td><span class="badge ${v.visibility==='published'?'badge-success':''}">${v.visibility}</span></td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="window.deleteVideo('${v.id}')">🗑️</button>
+                        </td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>
+        </div>
+    </div>`;
+    
+    window.deleteVideo = async (id) => {
+        if (confirm('Delete this video?')) {
+            await deleteDoc(doc(db, 'videos', id));
+            showToast('Deleted', 'success');
+            loadPage('video-list');
+        }
+    };
+}
+
+// ============ AD SETTINGS ============
+async function loadAdSettings() {
+    const snap = await getDoc(doc(db, 'settings', 'ads'));
+    const ads = snap.exists() ? snap.data() : {};
+    
+    pageContent.innerHTML = `
+    <div class="card">
+        <div class="section-title">💰 Advertisement Manager</div>
+        <p style="margin-bottom:16px;color:var(--text-secondary);">
+            <strong>AdsGram:</strong> Block ID system<br>
+            <strong>Monetag:</strong> Zone ID system<br>
+            Just paste your IDs below, ads will auto-run!
+        </p>
+        
+        <div class="form-group">
+            <label>🔵 AdsGram Block ID</label>
+            <input type="text" id="adsgram-id" placeholder="Enter your AdsGram Block ID" value="${ads.adsgramBlockId || ''}">
+            <small style="color:var(--text-secondary);">Get it from AdsGram dashboard</small>
+        </div>
+        
+        <div class="form-group">
+            <label>🟠 Monetag Zone ID</label>
+            <input type="text" id="monetag-id" placeholder="Enter your Monetag Zone ID" value="${ads.monetagZoneId || ''}">
+            <small style="color:var(--text-secondary);">Get it from Monetag dashboard</small>
+        </div>
+        
+        <div class="form-group">
+            <label>📺 Pre-roll Ad (before video starts)</label>
+            <select id="preroll-enabled">
+                <option value="true" ${ads.prerollEnabled !== false ? 'selected' : ''}>✅ Enabled</option>
+                <option value="false" ${ads.prerollEnabled === false ? 'selected' : ''}>❌ Disabled</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>⏱️ Mid-roll Ad Default Interval (minutes)</label>
+            <input type="number" id="midroll-interval" value="${ads.midrollInterval || 10}" min="1">
+            <small style="color:var(--text-secondary);">If video has no custom timing, show ad every X minutes</small>
+        </div>
+        
+        <div class="form-group">
+            <label>📺 Post-roll Ad (after video ends)</label>
+            <select id="postroll-enabled">
+                <option value="true" ${ads.postrollEnabled !== false ? 'selected' : ''}>✅ Enabled</option>
+                <option value="false" ${ads.postrollEnabled === false ? 'selected' : ''}>❌ Disabled</option>
+            </select>
+        </div>
+        
+        <button class="btn" id="save-ads-btn">💾 Save Ad Settings</button>
+    </div>`;
+    
+    document.getElementById('save-ads-btn').addEventListener('click', async () => {
+        const data = {
+            adsgramBlockId: document.getElementById('adsgram-id').value.trim(),
+            monetagZoneId: document.getElementById('monetag-id').value.trim(),
+            prerollEnabled: document.getElementById('preroll-enabled').value === 'true',
+            midrollInterval: parseInt(document.getElementById('midroll-interval').value) || 10,
+            postrollEnabled: document.getElementById('postroll-enabled').value === 'true',
+            updatedAt: serverTimestamp()
+        };
+        await setDoc(doc(db, 'settings', 'ads'), data, { merge: true });
+        showToast('Ad settings saved!', 'success');
+    });
+}
+
+// ============ CATEGORIES ============
+async function loadCategories() {
+    const snap = await getDocs(collection(db, 'categories'));
+    const cats = [];
+    snap.forEach(d => cats.push({ id: d.id, ...d.data() }));
+    
+    pageContent.innerHTML = `
+    <div class="card">
+        <div class="section-title">📂 Categories</div>
+        <button class="btn btn-sm" id="add-cat-btn" style="margin-bottom:16px;">+ Add Category</button>
+        <div>
+            ${cats.map(c => `
+                <div class="flex-row" style="justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+                    <span>${c.name}</span>
+                    <button class="btn btn-danger btn-sm" data-id="${c.id}" onclick="window.deleteCat('${c.id}')">🗑️</button>
+                </div>
+            `).join('')}
+        </div>
+    </div>`;
+    
+    document.getElementById('add-cat-btn').addEventListener('click', () => {
+        const name = prompt('Category name:');
+        if (name) {
+            setDoc(doc(db, 'categories', generateId()), { name, enabled: true });
+            loadPage('categories');
+        }
+    });
+    window.deleteCat = async (id) => {
+        await deleteDoc(doc(db, 'categories', id));
+        loadPage('categories');
+    };
+}
+
+// ============ USERS ============
+async function loadUsers() {
+    const snap = await getDocs(collection(db, 'users'));
+    const users = [];
+    snap.forEach(d => users.push({ id: d.id, ...d.data() }));
+    
+    pageContent.innerHTML = `
+    <div class="card">
+        <div class="section-title">👥 Users (${users.length})</div>
+        <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th></tr></thead>
+            <tbody>
+                ${users.map(u => `<tr><td>${u.firstName||''} ${u.lastName||''}</td><td>${u.email||''}</td><td>${u.role||'user'}</td><td>${timeAgo(u.createdAt)}</td></tr>`).join('')}
+            </tbody>
+        </table>
+    </div>`;
+}
+
+// ============ COMMENTS ============
+async function loadComments() {
+    const snap = await getDocs(query(collection(db, 'comments'), orderBy('createdAt', 'desc'), limit(30)));
+    const comments = [];
+    snap.forEach(d => comments.push({ id: d.id, ...d.data() }));
+    
+    pageContent.innerHTML = `
+    <div class="card">
+        <div class="section-title">💬 Recent Comments</div>
+        ${comments.map(c => `
+            <div style="padding:8px 0;border-bottom:1px solid var(--border);">
+                <strong>${c.userName||'User'}</strong>: ${c.text}
+                <button class="btn btn-danger btn-sm" style="float:right;" onclick="window.deleteComment('${c.id}')">🗑️</button>
+                <br><small style="color:var(--text-secondary);">${timeAgo(c.createdAt)}</small>
+            </div>
+        `).join('')}
+    </div>`;
+    window.deleteComment = async (id) => {
+        await deleteDoc(doc(db, 'comments', id));
+        loadPage('comments');
+    };
+}
+
+// ============ SETTINGS ============
+async function loadSettings() {
+    const snap = await getDoc(doc(db, 'settings', 'site'));
+    const s = snap.exists() ? snap.data() : {};
+    
+    pageContent.innerHTML = `
+    <div class="card">
+        <div class="section-title">⚡ Site Settings</div>
+        <div class="form-group">
+            <label>Site Name</label>
+            <input type="text" id="site-name" value="${s.siteName || 'VidStream Pro'}">
+        </div>
+        <div class="form-group">
+            <label>Telegram Bot Username</label>
+            <input type="text" id="tg-bot" value="${s.telegramBot || ''}">
+        </div>
+        <button class="btn" id="save-settings">Save Settings</button>
+    </div>`;
+    
+    document.getElementById('save-settings').addEventListener('click', async () => {
+        await setDoc(doc(db, 'settings', 'site'), {
+            siteName: document.getElementById('site-name').value,
+            telegramBot: document.getElementById('tg-bot').value
+        });
+        showToast('Settings saved!', 'success');
+    });
+}
+</script>
+</body>
+</html>
