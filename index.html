@@ -1,0 +1,2411 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Premium Video Platform - Watch exclusive long-form videos">
+    <title>VidStream Pro • Telegram Mini App</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1e1e1e;
+            --bg-card: #1a1a1a;
+            --bg-glass: rgba(20, 20, 20, 0.85);
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-tertiary: #707070;
+            --accent: #ff3b5c;
+            --accent-hover: #ff5a75;
+            --accent-glow: rgba(255, 59, 92, 0.3);
+            --green: #4caf84;
+            --blue: #4a9eff;
+            --yellow: #ffb347;
+            --purple: #9b59b6;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-light: rgba(255, 255, 255, 0.14);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.5);
+            --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.6);
+            --shadow-glow: 0 0 30px var(--accent-glow);
+            --radius-sm: 10px;
+            --radius-md: 16px;
+            --radius-lg: 22px;
+            --radius-xl: 28px;
+            --radius-full: 9999px;
+            --font-sans: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+            --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-bounce: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            --nav-height: 64px;
+            --bottom-nav-height: 72px;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-top: env(safe-area-inset-top, 0px);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f5f5f7;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #e8e8ed;
+            --bg-card: #ffffff;
+            --bg-glass: rgba(255, 255, 255, 0.88);
+            --text-primary: #1a1a1a;
+            --text-secondary: #555555;
+            --text-tertiary: #999999;
+            --border: rgba(0, 0, 0, 0.08);
+            --border-light: rgba(0, 0, 0, 0.12);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.14);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            font-size: 16px;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            scroll-behavior: smooth;
+            overscroll-behavior: none;
+        }
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            line-height: 1.5;
+            transition: background var(--transition-smooth), color var(--transition-smooth);
+            padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom));
+            padding-top: var(--safe-top);
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-light);
+            border-radius: var(--radius-full);
+        }
+
+        /* Loading Screen */
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        #loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .loader-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .loader-logo {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+            animation: pulse-glow 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse-glow {
+            0%,
+            100% {
+                filter: drop-shadow(0 0 8px var(--accent-glow));
+            }
+            50% {
+                filter: drop-shadow(0 0 24px var(--accent-glow));
+            }
+        }
+        .loader-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-secondary) 50%, var(--bg-tertiary) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: var(--radius-sm);
+        }
+        @keyframes shimmer {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+        .skeleton-text {
+            height: 14px;
+            margin-bottom: 8px;
+        }
+        .skeleton-text.short {
+            width: 60%;
+        }
+        .skeleton-thumb {
+            width: 100%;
+            aspect-ratio: 16/9;
+            border-radius: var(--radius-md);
+        }
+        .skeleton-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        /* Glass Card */
+        .glass-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-smooth);
+        }
+        .glass-card:hover {
+            border-color: var(--border-light);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+        .glass-card:active {
+            transform: scale(0.98);
+            transition: transform var(--transition-fast);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius-full);
+            font-family: var(--font-sans);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+            letter-spacing: 0.3px;
+            position: relative;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 4px 16px var(--accent-glow);
+        }
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 6px 24px var(--accent-glow);
+        }
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+        }
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border-radius: 50%;
+            font-size: 1.2rem;
+        }
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.8rem;
+        }
+
+        /* Top Nav */
+        #top-nav {
+            position: sticky;
+            top: var(--safe-top);
+            z-index: 100;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            min-height: var(--nav-height);
+        }
+        #top-nav .logo {
+            font-weight: 800;
+            font-size: 1.3rem;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--accent), #ff6b8a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        #search-bar {
+            flex: 1;
+            max-width: 400px;
+            position: relative;
+        }
+        #search-bar input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border-radius: var(--radius-full);
+            border: 1px solid var(--border);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            transition: all var(--transition-fast);
+            outline: none;
+        }
+        #search-bar input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        #search-bar .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-tertiary);
+            pointer-events: none;
+            font-size: 1rem;
+        }
+        .nav-actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .theme-toggle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--bg-tertiary);
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+        }
+
+        /* Bottom Nav */
+        #bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 8px calc(8px + var(--safe-bottom));
+            min-height: var(--bottom-nav-height);
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+            color: var(--text-tertiary);
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .nav-item.active {
+            color: var(--accent);
+        }
+        .nav-item .nav-icon {
+            font-size: 1.4rem;
+            transition: transform var(--transition-bounce);
+        }
+        .nav-item:active .nav-icon {
+            transform: scale(1.2);
+        }
+        .nav-item.active .nav-icon {
+            transform: scale(1.1);
+        }
+
+        /* Main Content */
+        #main-content {
+            padding: 16px;
+            max-width: 900px;
+            margin: 0 auto;
+            animation: fadeInUp 0.4s ease;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .section-title {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin: 20px 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: -0.3px;
+        }
+        .section-title .icon {
+            font-size: 1.3rem;
+        }
+
+        /* Video Grid */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 14px;
+        }
+        @media (max-width: 600px) {
+            .video-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+        }
+        .video-card {
+            cursor: pointer;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            transition: all var(--transition-smooth);
+            position: relative;
+        }
+        .video-card:hover {
+            border-color: var(--border-light);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-3px);
+        }
+        .video-card:active {
+            transform: scale(0.97);
+            transition: transform var(--transition-fast);
+        }
+        .video-thumb {
+            position: relative;
+            aspect-ratio: 16/9;
+            background: var(--bg-tertiary);
+            overflow: hidden;
+        }
+        .video-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .video-card:hover .video-thumb img {
+            transform: scale(1.05);
+        }
+        .video-duration {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            backdrop-filter: blur(4px);
+        }
+        .video-progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 0 2px 0 0;
+            transition: width 0.3s ease;
+        }
+        .video-info {
+            padding: 12px 14px;
+        }
+        .video-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 6px;
+            letter-spacing: -0.2px;
+        }
+        .video-meta {
+            font-size: 0.78rem;
+            color: var(--text-tertiary);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .video-views::after {
+            content: '•';
+            margin-left: 8px;
+            opacity: 0.5;
+        }
+
+        /* Category Pills */
+        .category-pills {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 4px 0 12px;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+        }
+        .category-pills::-webkit-scrollbar {
+            display: none;
+        }
+        .category-pill {
+            flex-shrink: 0;
+            padding: 8px 18px;
+            border-radius: var(--radius-full);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+            letter-spacing: 0.2px;
+        }
+        .category-pill.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+            box-shadow: 0 2px 12px var(--accent-glow);
+        }
+        .category-pill:active {
+            transform: scale(0.94);
+        }
+
+        /* Video Player Overlay */
+        #player-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        #player-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        #player-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: #000;
+        }
+        #video-player {
+            width: 100%;
+            height: 100%;
+            max-height: 100vh;
+            object-fit: contain;
+            background: #000;
+        }
+        .player-controls-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        #player-container.show-controls .player-controls-overlay {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .player-progress {
+            width: 100%;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 2px;
+            cursor: pointer;
+            outline: none;
+        }
+        .player-progress::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+        .player-btn-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .player-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 50%;
+            transition: all var(--transition-fast);
+        }
+        .player-btn:active {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        .player-close {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.3rem;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+        }
+
+        /* Video Detail Page */
+        .video-detail {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .video-detail h1 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 14px 0 8px;
+            letter-spacing: -0.3px;
+        }
+        .video-detail .detail-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+        }
+        .action-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 12px 0;
+        }
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 16px;
+            border-radius: var(--radius-full);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+            color: var(--text-primary);
+        }
+        .action-btn.liked {
+            color: var(--accent);
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+        .action-btn:active {
+            transform: scale(0.94);
+        }
+        .comment-section {
+            margin-top: 20px;
+        }
+        .comment-input-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .comment-input-row input {
+            flex: 1;
+            padding: 10px 16px;
+            border-radius: var(--radius-full);
+            border: 1px solid var(--border);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .comment {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 8px;
+        }
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .comment-body {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-left: 36px;
+        }
+        .comment-time {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+            margin-left: 36px;
+            margin-top: 2px;
+        }
+
+        /* Admin Panel */
+        #admin-panel {
+            display: none;
+            padding: 16px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        #admin-panel.visible {
+            display: block;
+            animation: fadeInUp 0.4s ease;
+        }
+        .admin-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .admin-card h3 {
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+        }
+        .stat-box {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), #ff6b8a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            margin-top: 4px;
+        }
+        .admin-form input,
+        .admin-form textarea,
+        .admin-form select {
+            width: 100%;
+            padding: 10px 14px;
+            margin-bottom: 10px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .admin-form textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .toast {
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            animation: slideInRight 0.3s ease;
+            box-shadow: var(--shadow-lg);
+            max-width: 340px;
+        }
+        @keyframes slideInRight {
+            from {
+                transform: translateX(120%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Offline Banner */
+        #offline-banner {
+            display: none;
+            background: var(--yellow);
+            color: #000;
+            text-align: center;
+            padding: 8px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 300;
+        }
+        #offline-banner.show {
+            display: block;
+        }
+
+        /* Pull to refresh indicator */
+        .ptr-indicator {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-tertiary);
+            font-size: 0.85rem;
+            display: none;
+        }
+        .ptr-indicator.active {
+            display: block;
+        }
+
+        /* Ad containers */
+        .ad-banner {
+            width: 100%;
+            min-height: 60px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 12px 0;
+            color: var(--text-tertiary);
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+            border: 1px dashed var(--border);
+            overflow: hidden;
+        }
+        .ad-sticky-bottom {
+            position: fixed;
+            bottom: calc(var(--bottom-nav-height) + var(--safe-bottom));
+            left: 0;
+            right: 0;
+            z-index: 99;
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--border);
+            padding: 8px;
+            text-align: center;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Responsive */
+        @media (min-width: 768px) {
+            #main-content {
+                padding: 20px 24px;
+            }
+            .video-grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: 18px;
+            }
+            #bottom-nav {
+                max-width: 500px;
+                left: 50%;
+                transform: translateX(-50%);
+                border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+                border: 1px solid var(--border);
+                border-bottom: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loader-logo">🎬</div>
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Loading VidStream Pro...</div>
+    </div>
+
+    <!-- Offline Banner -->
+    <div id="offline-banner">⚠️ You are offline. Some features may be limited.</div>
+
+    <!-- Top Navigation -->
+    <nav id="top-nav">
+        <span class="logo">🎬 VidStream</span>
+        <div id="search-bar">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="Search videos..." autocomplete="off">
+        </div>
+        <div class="nav-actions">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">🌙</button>
+            <button class="btn btn-ghost btn-icon" id="admin-btn" title="Admin" style="display:none;">⚙️</button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main id="main-content">
+        <!-- Dynamic content rendered here -->
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav id="bottom-nav">
+        <div class="nav-item active" data-view="home">
+            <span class="nav-icon">🏠</span> Home
+        </div>
+        <div class="nav-item" data-view="trending">
+            <span class="nav-icon">🔥</span> Trending
+        </div>
+        <div class="nav-item" data-view="library">
+            <span class="nav-icon">📚</span> Library
+        </div>
+        <div class="nav-item" data-view="profile">
+            <span class="nav-icon">👤</span> Profile
+        </div>
+    </nav>
+
+    <!-- Video Player Overlay -->
+    <div id="player-overlay">
+        <button class="player-close" id="player-close">✕</button>
+        <div id="player-container">
+            <video id="video-player" playsinline controlsList="nodownload" preload="metadata"></video>
+            <div class="player-controls-overlay" id="player-controls-ui">
+                <input type="range" class="player-progress" id="player-progress" value="0" min="0" max="100">
+                <div class="player-btn-row">
+                    <button class="player-btn" id="btn-play-pause">▶️</button>
+                    <span id="player-time" style="color:#fff;font-size:0.8rem;">0:00 / 0:00</span>
+                    <div style="flex:1;"></div>
+                    <button class="player-btn" id="btn-speed">1x</button>
+                    <button class="player-btn" id="btn-pip">🖼️</button>
+                    <button class="player-btn" id="btn-fullscreen">⛶</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel (hidden by default) -->
+    <div id="admin-panel">
+        <div class="admin-card">
+            <h3>📊 Admin Dashboard</h3>
+            <div class="admin-stats" id="admin-stats">
+                <div class="stat-box"><div class="stat-value" id="stat-users">0</div><div class="stat-label">Users</div></div>
+                <div class="stat-box"><div class="stat-value" id="stat-videos">0</div><div class="stat-label">Videos</div></div>
+                <div class="stat-box"><div class="stat-value" id="stat-views">0</div><div class="stat-label">Total Views</div></div>
+                <div class="stat-box"><div class="stat-value" id="stat-likes">0</div><div class="stat-label">Likes</div></div>
+            </div>
+        </div>
+        <div class="admin-card">
+            <h3>📤 Upload Video</h3>
+            <form class="admin-form" id="upload-form">
+                <input type="text" placeholder="Video Title *" id="upload-title" required>
+                <textarea placeholder="Description" id="upload-desc"></textarea>
+                <input type="file" id="upload-thumbnail" accept="image/*">
+                <input type="file" id="upload-video-file" accept="video/*" required>
+                <select id="upload-category">
+                    <option value="">Select Category</option>
+                    <option value="Education">Education</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Music">Music</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Sports">Sports</option>
+                    <option value="News">News</option>
+                    <option value="Documentary">Documentary</option>
+                </select>
+                <input type="text" placeholder="Tags (comma separated)" id="upload-tags">
+                <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;">
+                    <input type="checkbox" id="upload-featured"> Featured Video
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;">
+                    <input type="checkbox" id="upload-trending"> Trending Video
+                </label>
+                <select id="upload-visibility">
+                    <option value="published">Published</option>
+                    <option value="draft">Draft</option>
+                    <option value="scheduled">Scheduled</option>
+                </select>
+                <input type="datetime-local" id="upload-schedule" style="display:none;">
+                <button type="submit" class="btn btn-primary" id="upload-submit-btn">🚀 Upload Video</button>
+                <progress id="upload-progress" value="0" max="100" style="width:100%;display:none;"></progress>
+            </form>
+        </div>
+        <div class="admin-card">
+            <h3>📢 Ad Settings</h3>
+            <div class="admin-form" id="ad-settings-form">
+                <label style="font-size:0.85rem;">Pre-roll Ad Code (AdsGram/Monetag)</label>
+                <textarea id="ad-preroll" placeholder="Paste ad script here..."></textarea>
+                <label style="font-size:0.85rem;">Mid-roll Ad Code</label>
+                <textarea id="ad-midroll" placeholder="Paste ad script here..."></textarea>
+                <label style="font-size:0.85rem;">Banner Ad Code</label>
+                <textarea id="ad-banner" placeholder="Paste ad script here..."></textarea>
+                <label style="font-size:0.85rem;">Sticky Bottom Ad Code</label>
+                <textarea id="ad-sticky" placeholder="Paste ad script here..."></textarea>
+                <label style="font-size:0.85rem;">Show Ads Every (minutes)</label>
+                <input type="number" id="ad-frequency" value="15" min="1">
+                <button class="btn btn-primary btn-sm" id="save-ad-settings">💾 Save Ad Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Ad Sticky Bottom Container -->
+    <div class="ad-sticky-bottom" id="ad-sticky-bottom" style="display:none;"></div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import {
+            getFirestore,
+            collection,
+            doc,
+            setDoc,
+            getDoc,
+            getDocs,
+            updateDoc,
+            deleteDoc,
+            query,
+            where,
+            orderBy,
+            limit,
+            startAfter,
+            increment,
+            arrayUnion,
+            arrayRemove,
+            serverTimestamp,
+            onSnapshot,
+            runTransaction,
+            writeBatch
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import {
+            getStorage,
+            ref,
+            uploadBytesResumable,
+            getDownloadURL,
+            deleteObject
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+        import {
+            getAuth,
+            signInWithCustomToken,
+            onAuthStateChanged,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        // ==================== FIREBASE CONFIGURATION ====================
+        // Replace with your Firebase project config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBg-Og3zeSeel6OSCUyM_hqId0c8ADrYYg",
+  authDomain: "vid-stream-dc255.firebaseapp.com",
+  databaseURL: "https://vid-stream-dc255-default-rtdb.firebaseio.com",
+  projectId: "vid-stream-dc255",
+  storageBucket: "vid-stream-dc255.firebasestorage.app",
+  messagingSenderId: "162709804261",
+  appId: "1:162709804261:web:5ef91eeb93cc61d616700c",
+  measurementId: "G-MHYRKFCMLE"
+};
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+        const auth = getAuth(app);
+
+        // ==================== GLOBAL STATE ====================
+        const STATE = {
+            telegramUser: null,
+            telegramId: null,
+            firebaseUser: null,
+            isAdmin: false,
+            currentView: 'home',
+            currentVideoId: null,
+            watchHistory: [],
+            favorites: [],
+            lastVisibleDoc: null,
+            isLoading: false,
+            isOnline: navigator.onLine,
+            theme: 'dark',
+            adSettings: {},
+            playerSpeed: 1,
+            searchQuery: '',
+            activeCategory: 'all',
+        };
+
+        // ==================== DOM REFS ====================
+        const $ = (sel) => document.querySelector(sel);
+        const $$ = (sel) => document.querySelectorAll(sel);
+
+        const loadingScreen = $('#loading-screen');
+        const mainContent = $('#main-content');
+        const playerOverlay = $('#player-overlay');
+        const videoPlayer = $('#video-player');
+        const playerContainer = $('#player-container');
+        const searchInput = $('#search-input');
+        const themeToggle = $('#theme-toggle');
+        const adminPanel = $('#admin-panel');
+        const adminBtn = $('#admin-btn');
+        const offlineBanner = $('#offline-banner');
+        const toastContainer = $('#toast-container');
+        const adStickyBottom = $('#ad-sticky-bottom');
+
+        // ==================== UTILITY FUNCTIONS ====================
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            toast.style.borderLeft = `3px solid ${type === 'error' ? '#ff3b5c' : type === 'success' ? '#4caf84' : '#4a9eff'}`;
+            toastContainer.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return '0:00';
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = Math.floor(seconds % 60);
+            if (h > 0) return `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            return `${m}:${s.toString().padStart(2,'0')}`;
+        }
+
+        function formatNumber(num) {
+            if (!num) return '0';
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toString();
+        }
+
+        function timeAgo(date) {
+            if (!date) return '';
+            const now = Date.now();
+            const diff = now - (date.toDate ? date.toDate().getTime() : new Date(date).getTime());
+            const mins = Math.floor(diff / 60000);
+            const hrs = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            if (mins < 1) return 'Just now';
+            if (mins < 60) return `${mins}m ago`;
+            if (hrs < 24) return `${hrs}h ago`;
+            if (days < 30) return `${days}d ago`;
+            return new Date(date.toDate ? date.toDate() : date).toLocaleDateString();
+        }
+
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        // ==================== TELEGRAM AUTHENTICATION ====================
+        async function initTelegramAuth() {
+            try {
+                // Check if running inside Telegram Mini App
+                if (window.Telegram && window.Telegram.WebApp) {
+                    const tg = window.Telegram.WebApp;
+                    tg.ready();
+                    tg.expand();
+
+                    const initData = tg.initData || '';
+                    const initDataUnsafe = tg.initDataUnsafe || {};
+
+                    if (initDataUnsafe.user) {
+                        STATE.telegramUser = initDataUnsafe.user;
+                        STATE.telegramId = String(initDataUnsafe.user.id);
+                        STATE.theme = tg.colorScheme || 'dark';
+                        applyTheme();
+
+                        // Authenticate with Firebase using Telegram ID
+                        await authenticateWithFirebase(STATE.telegramId, initDataUnsafe.user);
+                    } else {
+                        // Fallback: try to get from URL or use demo mode
+                        console.warn('Telegram user data not available. Using demo mode.');
+                        STATE.telegramId = 'demo_user_' + generateId();
+                        STATE.telegramUser = {
+                            id: STATE.telegramId,
+                            first_name: 'Demo',
+                            last_name: 'User',
+                            username: 'demo_user'
+                        };
+                        await authenticateWithFirebase(STATE.telegramId, STATE.telegramUser);
+                    }
+
+                    // Set Telegram theme colors
+                    if (tg.themeParams) {
+                        document.documentElement.style.setProperty('--accent', tg.themeParams.button_color || '#ff3b5c');
+                    }
+                } else {
+                    // Not in Telegram - demo mode
+                    console.warn('Not running in Telegram Mini App. Using demo mode.');
+                    STATE.telegramId = 'demo_user_' + generateId();
+                    STATE.telegramUser = {
+                        id: STATE.telegramId,
+                        first_name: 'Demo',
+                        last_name: 'User',
+                        username: 'demo_user'
+                    };
+                    await authenticateWithFirebase(STATE.telegramId, STATE.telegramUser);
+                }
+            } catch (error) {
+                console.error('Telegram auth error:', error);
+                showToast('Authentication error. Using demo mode.', 'error');
+                STATE.telegramId = 'demo_user_' + generateId();
+                STATE.telegramUser = { id: STATE.telegramId, first_name: 'Demo', last_name: 'User' };
+                await authenticateWithFirebase(STATE.telegramId, STATE.telegramUser);
+            }
+        }
+
+        async function authenticateWithFirebase(telegramId, userData) {
+            try {
+                // Create or update user in Firestore
+                const userRef = doc(db, 'users', telegramId);
+                const userSnap = await getDoc(userRef);
+
+                if (!userSnap.exists()) {
+                    await setDoc(userRef, {
+                        telegramId: telegramId,
+                        firstName: userData.first_name || '',
+                        lastName: userData.last_name || '',
+                        username: userData.username || '',
+                        photoUrl: userData.photo_url || '',
+                        role: 'user',
+                        createdAt: serverTimestamp(),
+                        lastLogin: serverTimestamp(),
+                        watchHistory: [],
+                        favorites: [],
+                        watchLater: [],
+                        settings: { theme: STATE.theme, language: 'en' }
+                    });
+                } else {
+                    await updateDoc(userRef, {
+                        lastLogin: serverTimestamp(),
+                        firstName: userData.first_name || userSnap.data().firstName,
+                        lastName: userData.last_name || userSnap.data().lastName,
+                        username: userData.username || userSnap.data().username,
+                    });
+                }
+
+                // Check if admin
+                const userData2 = (await getDoc(userRef)).data();
+                STATE.isAdmin = userData2.role === 'admin';
+                STATE.firebaseUser = { uid: telegramId, ...userData2 };
+
+                if (STATE.isAdmin) {
+                    adminBtn.style.display = 'flex';
+                }
+
+                // Load user data
+                STATE.watchHistory = userData2.watchHistory || [];
+                STATE.favorites = userData2.favorites || [];
+
+                return true;
+            } catch (error) {
+                console.error('Firebase auth error:', error);
+                // Proceed with limited functionality
+                STATE.firebaseUser = { uid: telegramId, role: 'user' };
+                return false;
+            }
+        }
+
+        // ==================== THEME ====================
+        function applyTheme() {
+            document.documentElement.setAttribute('data-theme', STATE.theme);
+            themeToggle.textContent = STATE.theme === 'dark' ? '☀️' : '🌙';
+            localStorage.setItem('theme', STATE.theme);
+        }
+
+        themeToggle.addEventListener('click', () => {
+            STATE.theme = STATE.theme === 'dark' ? 'light' : 'dark';
+            applyTheme();
+            if (STATE.firebaseUser?.uid) {
+                updateDoc(doc(db, 'users', STATE.firebaseUser.uid), {
+                    'settings.theme': STATE.theme
+                }).catch(() => {});
+            }
+        });
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) STATE.theme = savedTheme;
+        applyTheme();
+
+        // ==================== ONLINE/OFFLINE DETECTION ====================
+        function updateOnlineStatus() {
+            STATE.isOnline = navigator.onLine;
+            if (!STATE.isOnline) {
+                offlineBanner.classList.add('show');
+            } else {
+                offlineBanner.classList.remove('show');
+            }
+        }
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        updateOnlineStatus();
+
+        // ==================== LOAD AD SETTINGS ====================
+        async function loadAdSettings() {
+            try {
+                const adDoc = await getDoc(doc(db, 'settings', 'ads'));
+                if (adDoc.exists()) {
+                    STATE.adSettings = adDoc.data();
+                    renderAds();
+                }
+            } catch (e) {
+                console.log('Ad settings not loaded:', e.message);
+            }
+        }
+
+        function renderAds() {
+            const settings = STATE.adSettings || {};
+            // Render sticky bottom ad
+            if (settings.stickyAdCode && settings.stickyAdEnabled !== false) {
+                adStickyBottom.style.display = 'flex';
+                adStickyBottom.innerHTML = settings.stickyAdCode;
+            } else {
+                adStickyBottom.style.display = 'none';
+            }
+            // Banner ads are rendered inline in content
+        }
+
+        function executeAdCode(container, code) {
+            if (!code || !container) return;
+            container.innerHTML = code;
+            // Execute any scripts in the ad code
+            const scripts = container.querySelectorAll('script');
+            scripts.forEach(oldScript => {
+                const newScript = document.createElement('script');
+                newScript.textContent = oldScript.textContent;
+                newScript.async = true;
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+            });
+        }
+
+        // ==================== NAVIGATION ====================
+        function navigateTo(view, data = {}) {
+            STATE.currentView = view;
+            STATE.currentVideoId = data.videoId || null;
+
+            // Update bottom nav
+            $$('.nav-item').forEach(item => item.classList.remove('active'));
+            const navItem = $(`.nav-item[data-view="${view}"]`);
+            if (navItem) navItem.classList.add('active');
+
+            // Hide admin panel
+            adminPanel.classList.remove('visible');
+
+            // Render view
+            switch (view) {
+                case 'home':
+                    renderHome();
+                    break;
+                case 'trending':
+                    renderTrending();
+                    break;
+                case 'library':
+                    renderLibrary();
+                    break;
+                case 'profile':
+                    renderProfile();
+                    break;
+                case 'video-detail':
+                    renderVideoDetail(data.videoId);
+                    break;
+                case 'search':
+                    renderSearchResults(data.query);
+                    break;
+                case 'category':
+                    renderCategory(data.category);
+                    break;
+                default:
+                    renderHome();
+            }
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            mainContent.scrollTop = 0;
+        }
+
+        // Bottom nav click handlers
+        $$('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                navigateTo(item.dataset.view);
+            });
+        });
+
+        // Admin button
+        adminBtn.addEventListener('click', () => {
+            if (STATE.isAdmin) {
+                adminPanel.classList.toggle('visible');
+                if (adminPanel.classList.contains('visible')) {
+                    mainContent.style.display = 'none';
+                    loadAdminStats();
+                } else {
+                    mainContent.style.display = 'block';
+                    navigateTo('home');
+                }
+            }
+        });
+
+        // ==================== RENDER HOME ====================
+        async function renderHome() {
+            mainContent.style.display = 'block';
+            adminPanel.classList.remove('visible');
+            mainContent.innerHTML = `
+            <div class="ptr-indicator" id="ptr-indicator">↓ Pull to refresh</div>
+            <div class="category-pills" id="category-pills">
+              <span class="category-pill active" data-cat="all">All</span>
+              <span class="category-pill" data-cat="Education">📚 Education</span>
+              <span class="category-pill" data-cat="Entertainment">🎭 Entertainment</span>
+              <span class="category-pill" data-cat="Music">🎵 Music</span>
+              <span class="category-pill" data-cat="Technology">💻 Technology</span>
+              <span class="category-pill" data-cat="Sports">⚽ Sports</span>
+              <span class="category-pill" data-cat="Documentary">🎥 Documentary</span>
+            </div>
+            <div id="featured-section">
+              <div class="section-title"><span class="icon">⭐</span> Featured Videos</div>
+              <div class="video-grid" id="featured-grid"></div>
+            </div>
+            <div class="ad-banner" id="home-banner-ad"></div>
+            <div id="latest-section">
+              <div class="section-title"><span class="icon">🆕</span> Latest Videos</div>
+              <div class="video-grid" id="latest-grid"></div>
+            </div>
+            <div id="trending-section">
+              <div class="section-title"><span class="icon">🔥</span> Trending Now</div>
+              <div class="video-grid" id="trending-grid"></div>
+            </div>
+            <div id="load-more-container" style="text-align:center;padding:20px;">
+              <button class="btn btn-secondary" id="load-more-btn" style="display:none;">Load More</button>
+            </div>
+          `;
+
+            // Category pill handlers
+            $$('#category-pills .category-pill').forEach(pill => {
+                pill.addEventListener('click', () => {
+                    $$('#category-pills .category-pill').forEach(p => p.classList.remove(
+                        'active'));
+                    pill.classList.add('active');
+                    STATE.activeCategory = pill.dataset.cat;
+                    navigateTo(STATE.activeCategory === 'all' ? 'home' : 'category',
+                        { category: STATE.activeCategory });
+                });
+            });
+
+            // Load videos
+            await loadVideoSections();
+
+            // Render home banner ad
+            if (STATE.adSettings?.bannerAdCode) {
+                executeAdCode($('#home-banner-ad'), STATE.adSettings.bannerAdCode);
+            }
+
+            // Pull to refresh
+            setupPullToRefresh();
+            setupInfiniteScroll();
+        }
+
+        async function loadVideoSections() {
+            try {
+                const videosRef = collection(db, 'videos');
+                const publishedQuery = query(videosRef, where('visibility', '==', 'published'),
+                    orderBy('createdAt', 'desc'), limit(20));
+
+                const snapshot = await getDocs(publishedQuery);
+                const videos = [];
+                snapshot.forEach(doc => videos.push({ id: doc.id, ...doc.data() }));
+
+                STATE.lastVisibleDoc = snapshot.docs[snapshot.docs.length - 1] || null;
+
+                // Featured
+                const featured = videos.filter(v => v.featured).slice(0, 6);
+                renderVideoGrid('featured-grid', featured);
+
+                // Latest
+                const latest = videos.slice(0, 8);
+                renderVideoGrid('latest-grid', latest);
+
+                // Trending (by views)
+                const trending = [...videos].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 8);
+                renderVideoGrid('trending-grid', trending);
+
+                if (STATE.lastVisibleDoc && videos.length >= 20) {
+                    $('#load-more-btn').style.display = 'inline-block';
+                }
+            } catch (error) {
+                console.error('Error loading videos:', error);
+                showToast('Failed to load videos. Please try again.', 'error');
+                // Show skeleton on error
+                ['featured-grid', 'latest-grid', 'trending-grid'].forEach(id => {
+                    const grid = $(`#${id}`);
+                    if (grid) grid.innerHTML = Array(4).fill(
+                        '<div class="video-card"><div class="skeleton skeleton-thumb"></div><div class="video-info"><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text short"></div></div></div>'
+                        ).join('');
+                });
+            }
+        }
+
+        function renderVideoGrid(gridId, videos) {
+            const grid = $(`#${gridId}`);
+            if (!grid) return;
+            if (!videos || videos.length === 0) {
+                grid.innerHTML =
+                    '<div style="color:var(--text-tertiary);padding:20px;text-align:center;">No videos yet</div>';
+                return;
+            }
+            grid.innerHTML = videos.map(v => `
+            <div class="video-card" data-video-id="${v.id}" onclick="window._navigateToVideo('${v.id}')">
+              <div class="video-thumb">
+                <img src="${v.thumbnailUrl || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 320 180%22><rect fill=%22%23333%22 width=%22320%22 height=%22180%22/><text fill=%22%23888%22 x=%22160%22 y=%2295%22 text-anchor=%22middle%22 font-size=%2218%22>No Thumbnail</text></svg>'}" alt="${v.title}" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 320 180%22><rect fill=%22%23333%22 width=%22320%22 height=%22180%22/><text fill=%22%23888%22 x=%22160%22 y=%2295%22 text-anchor=%22middle%22 font-size=%2218%22>🎬</text></svg>'">
+                <span class="video-duration">${formatTime(v.duration || 0)}</span>
+                ${v.watchProgress ? `<div class="video-progress-bar" style="width:${v.watchProgress}%"></div>` : ''}
+              </div>
+              <div class="video-info">
+                <div class="video-title">${escapeHtml(v.title || 'Untitled')}</div>
+                <div class="video-meta">
+                  <span class="video-views">${formatNumber(v.views || 0)} views</span>
+                  <span>${timeAgo(v.createdAt)}</span>
+                </div>
+              </div>
+            </div>
+          `).join('');
+
+            // Add click listeners
+            grid.querySelectorAll('.video-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    navigateTo('video-detail', { videoId: card.dataset.videoId });
+                });
+            });
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // Expose for inline onclick
+        window._navigateToVideo = function(videoId) {
+            navigateTo('video-detail', { videoId });
+        };
+
+        function setupPullToRefresh() {
+            let startY = 0;
+            const ptrIndicator = $('#ptr-indicator');
+            if (!ptrIndicator) return;
+
+            mainContent.addEventListener('touchstart', (e) => {
+                if (mainContent.scrollTop <= 0) {
+                    startY = e.touches[0].clientY;
+                }
+            }, { passive: true });
+
+            mainContent.addEventListener('touchmove', (e) => {
+                if (mainContent.scrollTop <= 0 && e.touches[0].clientY - startY > 60) {
+                    ptrIndicator.classList.add('active');
+                }
+            }, { passive: true });
+
+            mainContent.addEventListener('touchend', async () => {
+                if (ptrIndicator.classList.contains('active')) {
+                    ptrIndicator.classList.remove('active');
+                    ptrIndicator.textContent = '🔄 Refreshing...';
+                    await loadVideoSections();
+                    ptrIndicator.textContent = '↓ Pull to refresh';
+                    showToast('Refreshed!', 'success');
+                }
+            });
+        }
+
+        function setupInfiniteScroll() {
+            const loadMoreBtn = $('#load-more-btn');
+            if (!loadMoreBtn) return;
+
+            loadMoreBtn.addEventListener('click', async () => {
+                if (STATE.isLoading || !STATE.lastVisibleDoc) return;
+                STATE.isLoading = true;
+                loadMoreBtn.textContent = 'Loading...';
+                loadMoreBtn.disabled = true;
+
+                try {
+                    const videosRef = collection(db, 'videos');
+                    const nextQuery = query(videosRef, where('visibility', '==', 'published'),
+                        orderBy('createdAt', 'desc'), startAfter(STATE.lastVisibleDoc), limit(12));
+                    const snapshot = await getDocs(nextQuery);
+                    const videos = [];
+                    snapshot.forEach(doc => videos.push({ id: doc.id, ...doc.data() }));
+                    STATE.lastVisibleDoc = snapshot.docs[snapshot.docs.length - 1] || null;
+                    renderVideoGrid('latest-grid', videos); // Append would be better, but re-render for simplicity
+
+                    if (!STATE.lastVisibleDoc) loadMoreBtn.style.display = 'none';
+                } catch (e) {
+                    console.error(e);
+                } finally {
+                    STATE.isLoading = false;
+                    loadMoreBtn.textContent = 'Load More';
+                    loadMoreBtn.disabled = false;
+                }
+            });
+        }
+
+        // ==================== RENDER TRENDING ====================
+        async function renderTrending() {
+            mainContent.style.display = 'block';
+            adminPanel.classList.remove('visible');
+            mainContent.innerHTML = `
+            <div class="section-title"><span class="icon">🔥</span> Trending Videos</div>
+            <div class="video-grid" id="trending-full-grid"></div>
+          `;
+            try {
+                const snapshot = await getDocs(query(collection(db, 'videos'),
+                    where('visibility', '==', 'published'), orderBy('views', 'desc'), limit(30)));
+                const videos = [];
+                snapshot.forEach(doc => videos.push({ id: doc.id, ...doc.data() }));
+                renderVideoGrid('trending-full-grid', videos);
+            } catch (e) {
+                $('#trending-full-grid').innerHTML =
+                    '<div style="color:var(--text-tertiary);padding:40px;text-align:center;">Failed to load trending videos</div>';
+            }
+        }
+
+        // ==================== RENDER LIBRARY ====================
+        function renderLibrary() {
+            mainContent.style.display = 'block';
+            adminPanel.classList.remove('visible');
+            const historyVids = STATE.watchHistory || [];
+            const favVids = STATE.favorites || [];
+            mainContent.innerHTML = `
+            <div class="section-title"><span class="icon">🕐</span> Watch History</div>
+            <div class="video-grid" id="history-grid"></div>
+            <div class="section-title"><span class="icon">❤️</span> Favorites</div>
+            <div class="video-grid" id="favorites-grid"></div>
+          `;
+            renderVideoGrid('history-grid', historyVids.slice(0, 12));
+            renderVideoGrid('favorites-grid', favVids.slice(0, 12));
+            if (historyVids.length === 0) {
+                $('#history-grid').innerHTML =
+                    '<div style="color:var(--text-tertiary);padding:20px;">No watch history yet</div>';
+            }
+            if (favVids.length === 0) {
+                $('#favorites-grid').innerHTML =
+                    '<div style="color:var(--text-tertiary);padding:20px;">No favorites yet</div>';
+            }
+        }
+
+        // ==================== RENDER PROFILE ====================
+        function renderProfile() {
+            mainContent.style.display = 'block';
+            adminPanel.classList.remove('visible');
+            const user = STATE.telegramUser || {};
+            mainContent.innerHTML = `
+            <div class="glass-card" style="padding:24px;text-align:center;max-width:400px;margin:0 auto;">
+              <div style="font-size:4rem;margin-bottom:8px;">👤</div>
+              <h2 style="font-weight:700;">${escapeHtml(user.first_name || 'User')} ${escapeHtml(user.last_name || '')}</h2>
+              <p style="color:var(--text-secondary);">@${escapeHtml(user.username || 'unknown')}</p>
+              <p style="color:var(--text-tertiary);font-size:0.8rem;">Telegram ID: ${STATE.telegramId}</p>
+              <div style="margin-top:16px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+                <button class="btn btn-secondary btn-sm" onclick="window._shareApp()">📤 Share App</button>
+                <button class="btn btn-ghost btn-sm" id="btn-logout">🚪 Logout</button>
+              </div>
+              <div style="margin-top:20px;text-align:left;font-size:0.8rem;color:var(--text-tertiary);">
+                <p>📺 Videos Watched: ${(STATE.watchHistory || []).length}</p>
+                <p>❤️ Favorites: ${(STATE.favorites || []).length}</p>
+                <p>🎨 Theme: ${STATE.theme}</p>
+              </div>
+            </div>
+          `;
+            $('#btn-logout')?.addEventListener('click', () => {
+                if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.close();
+                }
+                location.reload();
+            });
+        }
+
+        window._shareApp = function() {
+            const url = window.location.href;
+            if (navigator.share) {
+                navigator.share({ title: 'VidStream Pro', text: 'Watch amazing videos!', url }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(url).then(() => showToast('Link copied!', 'success'));
+            }
+        };
+
+        // ==================== RENDER VIDEO DETAIL ====================
+        async function renderVideoDetail(videoId) {
+            if (!videoId) return navigateTo('home');
+            STATE.currentVideoId = videoId;
+            mainContent.style.display = 'block';
+            adminPanel.classList.remove('visible');
+            mainContent.innerHTML = `
+            <div class="video-detail" id="video-detail-container">
+              <div class="skeleton skeleton-thumb" style="aspect-ratio:16/9;border-radius:var(--radius-lg);"></div>
+              <div class="skeleton skeleton-text" style="height:20px;margin-top:16px;"></div>
+              <div class="skeleton skeleton-text short" style="height:14px;"></div>
+            </div>
+          `;
+
+            try {
+                const videoDoc = await getDoc(doc(db, 'videos', videoId));
+                if (!videoDoc.exists()) {
+                    mainContent.innerHTML =
+                        '<div style="text-align:center;padding:60px;"><h2>🚫 Video Not Found</h2><p>This video may have been removed.</p><button class="btn btn-primary" onclick="window._goHome()">Go Home</button></div>';
+                    return;
+                }
+                const video = { id: videoDoc.id, ...videoDoc.data() };
+
+                // Increment view count
+                await updateDoc(doc(db, 'videos', videoId), { views: increment(1) }).catch(() => {});
+
+                // Add to watch history
+                if (!STATE.watchHistory.find(v => v.id === videoId)) {
+                    STATE.watchHistory.unshift({ id: videoId, title: video.title, thumbnailUrl: video.thumbnailUrl,
+                        duration: video.duration, watchedAt: new Date().toISOString() });
+                    STATE.watchHistory = STATE.watchHistory.slice(0, 100);
+                    await updateDoc(doc(db, 'users', STATE.telegramId), { watchHistory: STATE.watchHistory })
+                        .catch(() => {});
+                }
+
+                // Check if liked
+                const likeDoc = await getDoc(doc(db, 'likes', `${STATE.telegramId}_${videoId}`));
+                const isLiked = likeDoc.exists();
+
+                // Check if favorited
+                const isFav = STATE.favorites.some(f => f.id === videoId);
+
+                // Load comments
+                const commentsSnap = await getDocs(query(collection(db, 'comments'),
+                    where('videoId', '==', videoId), orderBy('createdAt', 'desc'), limit(50)));
+                const comments = [];
+                commentsSnap.forEach(doc => comments.push({ id: doc.id, ...doc.data() }));
+
+                // Related videos
+                const relatedSnap = await getDocs(query(collection(db, 'videos'),
+                    where('category', '==', video.category || ''), where('visibility', '==', 'published'),
+                    limit(8)));
+                const related = [];
+                relatedSnap.forEach(doc => {
+                    if (doc.id !== videoId) related.push({ id: doc.id, ...doc.data() });
+                });
+
+                mainContent.innerHTML = `
+            <div class="video-detail">
+              <div class="video-thumb" style="aspect-ratio:16/9;border-radius:var(--radius-lg);overflow:hidden;cursor:pointer;" id="detail-thumb">
+                <img src="${video.thumbnailUrl || ''}" alt="${escapeHtml(video.title)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);">
+                  <span style="font-size:3rem;">▶️</span>
+                </div>
+                <span class="video-duration">${formatTime(video.duration || 0)}</span>
+              </div>
+              <h1>${escapeHtml(video.title || 'Untitled')}</h1>
+              <div class="detail-meta">
+                <span>👁️ ${formatNumber(video.views || 0)} views</span>
+                <span>📅 ${timeAgo(video.createdAt)}</span>
+                <span>🏷️ ${escapeHtml(video.category || 'General')}</span>
+              </div>
+              <div class="action-row">
+                <button class="action-btn ${isLiked ? 'liked' : ''}" id="btn-like">
+                  ${isLiked ? '❤️' : '🤍'} <span id="like-count">${formatNumber(video.likes || 0)}</span>
+                </button>
+                <button class="action-btn ${isFav ? 'liked' : ''}" id="btn-favorite">
+                  ${isFav ? '⭐' : '☆'} Save
+                </button>
+                <button class="action-btn" id="btn-share">📤 Share</button>
+                <button class="action-btn" id="btn-copy-link">🔗 Copy Link</button>
+                <button class="action-btn" id="btn-report">🚩 Report</button>
+              </div>
+              <p style="color:var(--text-secondary);margin:12px 0;line-height:1.6;">${escapeHtml(video.description || 'No description')}</p>
+              ${video.tags ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;">${video.tags.split(',').map(t => `<span style="background:var(--bg-tertiary);padding:4px 10px;border-radius:var(--radius-full);font-size:0.75rem;">#${escapeHtml(t.trim())}</span>`).join('')}</div>` : ''}
+
+              <div class="ad-banner" id="detail-ad-banner"></div>
+
+              <div class="comment-section">
+                <h3 style="font-weight:700;margin-bottom:12px;">💬 Comments (${comments.length})</h3>
+                <div class="comment-input-row">
+                  <input type="text" id="comment-input" placeholder="Add a comment..." maxlength="500">
+                  <button class="btn btn-primary btn-sm" id="btn-post-comment">Post</button>
+                </div>
+                <div id="comments-list">
+                  ${comments.map(c => `
+                    <div class="comment" id="comment-${c.id}">
+                      <div class="comment-header">👤 ${escapeHtml(c.userName || 'User')} ${c.isPinned ? '📌' : ''}</div>
+                      <div class="comment-body">${escapeHtml(c.text)}</div>
+                      <div class="comment-time">${timeAgo(c.createdAt)} ${c.userId === STATE.telegramId ? `<button class="btn-ghost btn-sm" style="color:var(--accent);" onclick="window._deleteComment('${c.id}','${videoId}')">🗑️</button>` : ''}</div>
+                    </div>
+                  `).join('')}
+                  ${comments.length === 0 ? '<p style="color:var(--text-tertiary);">No comments yet. Be the first!</p>' : ''}
+                </div>
+              </div>
+
+              <div class="section-title" style="margin-top:24px;"><span class="icon">🎬</span> Related Videos</div>
+              <div class="video-grid" id="related-grid"></div>
+            </div>
+          `;
+
+                // Render related videos
+                renderVideoGrid('related-grid', related.slice(0, 6));
+
+                // Detail thumb click -> play video
+                $('#detail-thumb')?.addEventListener('click', () => openPlayer(video));
+
+                // Like button
+                $('#btn-like')?.addEventListener('click', async () => {
+                    const likeRef = doc(db, 'likes', `${STATE.telegramId}_${videoId}`);
+                    if (isLiked) {
+                        await deleteDoc(likeRef);
+                        await updateDoc(doc(db, 'videos', videoId), { likes: increment(-1) });
+                        $('#btn-like').classList.remove('liked');
+                        $('#btn-like').innerHTML = '🤍 <span id="like-count">' + formatNumber((video
+                            .likes || 1) - 1) + '</span>';
+                    } else {
+                        await setDoc(likeRef, { userId: STATE.telegramId, videoId, createdAt: serverTimestamp() });
+                        await updateDoc(doc(db, 'videos', videoId), { likes: increment(1) });
+                        $('#btn-like').classList.add('liked');
+                        $('#btn-like').innerHTML = '❤️ <span id="like-count">' + formatNumber((video
+                            .likes || 0) + 1) + '</span>';
+                    }
+                });
+
+                // Favorite button
+                $('#btn-favorite')?.addEventListener('click', async () => {
+                    if (isFav) {
+                        STATE.favorites = STATE.favorites.filter(f => f.id !== videoId);
+                        $('#btn-favorite').classList.remove('liked');
+                        $('#btn-favorite').innerHTML = '☆ Save';
+                    } else {
+                        STATE.favorites.unshift({ id: videoId, title: video.title, thumbnailUrl: video
+                                .thumbnailUrl, duration: video.duration, savedAt: new Date()
+                                .toISOString() });
+                        STATE.favorites = STATE.favorites.slice(0, 200);
+                        $('#btn-favorite').classList.add('liked');
+                        $('#btn-favorite').innerHTML = '⭐ Saved';
+                    }
+                    await updateDoc(doc(db, 'users', STATE.telegramId), { favorites: STATE.favorites }).catch(
+                        () => {});
+                });
+
+                // Share button
+                $('#btn-share')?.addEventListener('click', () => {
+                    const url = `${window.location.origin}${window.location.pathname}?video=${videoId}`;
+                    if (navigator.share) navigator.share({ title: video.title, url }).catch(() => {});
+                    else {
+                        navigator.clipboard.writeText(url).then(() => showToast('Link copied!', 'success'));
+                    }
+                });
+
+                // Copy link
+                $('#btn-copy-link')?.addEventListener('click', () => {
+                    navigator.clipboard.writeText(
+                        `${window.location.origin}${window.location.pathname}?video=${videoId}`).then(() =>
+                        showToast('Link copied!', 'success'));
+                });
+
+                // Report
+                $('#btn-report')?.addEventListener('click', () => {
+                    showToast('Video reported. Thank you!', 'info');
+                });
+
+                // Post comment
+                $('#btn-post-comment')?.addEventListener('click', async () => {
+                    const text = $('#comment-input')?.value?.trim();
+                    if (!text) return showToast('Please enter a comment', 'error');
+                    if (text.length < 2) return showToast('Comment too short', 'error');
+                    const commentId = generateId();
+                    await setDoc(doc(db, 'comments', commentId), {
+                        videoId,
+                        userId: STATE.telegramId,
+                        userName: STATE.telegramUser?.first_name || 'User',
+                        text,
+                        createdAt: serverTimestamp(),
+                        isPinned: false,
+                    });
+                    showToast('Comment posted!', 'success');
+                    renderVideoDetail(videoId); // Refresh
+                });
+
+                // Render detail ad
+                if (STATE.adSettings?.bannerAdCode) {
+                    executeAdCode($('#detail-ad-banner'), STATE.adSettings.bannerAdCode);
+                }
+
+            } catch (error) {
+                console.error('Error loading video detail:', error);
+                mainContent.innerHTML =
+                    '<div style="text-align:center;padding:60px;"><h2>⚠️ Error</h2><p>Failed to load video. Please try again.</p><button class="btn btn-primary" onclick="window._goHome()">Go Home</button></div>';
+            }
+        }
+
+        window._deleteComment = async function(commentId, videoId) {
+            if (confirm('Delete this comment?')) {
+                await deleteDoc(doc(db, 'comments', commentId));
+                showToast('Comment deleted', 'success');
+                navigateTo('video-detail', { videoId });
+            }
+        };
+        window._goHome = function() { navigateTo('home'); };
+
+        // ==================== VIDEO PLAYER ====================
+        function openPlayer(video) {
+            STATE.currentVideoId = video.id;
+            playerOverlay.classList.add('active');
+            videoPlayer.src = video.videoUrl || '';
+            videoPlayer.poster = video.thumbnailUrl || '';
+            videoPlayer.load();
+            videoPlayer.play().catch(() => {});
+
+            // Save watch progress periodically
+            const progressInterval = setInterval(async () => {
+                if (videoPlayer.duration && videoPlayer.currentTime > 0) {
+                    const progress = Math.round((videoPlayer.currentTime / videoPlayer.duration) * 100);
+                    try {
+                        await updateDoc(doc(db, 'users', STATE.telegramId), {
+                            [`watchProgress.${video.id}`]: progress
+                        });
+                    } catch (e) {}
+                }
+            }, 5000);
+
+            const cleanup = () => {
+                clearInterval(progressInterval);
+                playerOverlay.classList.remove('active');
+                videoPlayer.pause();
+                videoPlayer.src = '';
+            };
+
+            $('#player-close').onclick = cleanup;
+            playerOverlay.addEventListener('click', (e) => {
+                if (e.target === playerOverlay) cleanup();
+            });
+
+            // Player controls
+            setupPlayerControls(video);
+
+            // Pre-roll ad
+            if (STATE.adSettings?.prerollAdCode && STATE.adSettings.prerollAdEnabled !== false) {
+                const adContainer = document.createElement('div');
+                adContainer.style.cssText =
+                    'position:absolute;top:0;left:0;right:0;z-index:50;background:#000;padding:8px;text-align:center;';
+                adContainer.innerHTML = STATE.adSettings.prerollAdCode;
+                playerContainer.appendChild(adContainer);
+                setTimeout(() => adContainer.remove(), 8000); // Remove after 8 seconds
+            }
+        }
+
+        function setupPlayerControls(video) {
+            const progressBar = $('#player-progress');
+            const btnPlayPause = $('#btn-play-pause');
+            const playerTime = $('#player-time');
+            const btnSpeed = $('#btn-speed');
+            const btnFullscreen = $('#btn-fullscreen');
+            const btnPip = $('#btn-pip');
+
+            videoPlayer.addEventListener('timeupdate', () => {
+                if (videoPlayer.duration) {
+                    progressBar.value = (videoPlayer.currentTime / videoPlayer.duration) * 100;
+                    playerTime.textContent =
+                        `${formatTime(videoPlayer.currentTime)} / ${formatTime(videoPlayer.duration)}`;
+                }
+            });
+
+            progressBar.addEventListener('input', () => {
+                videoPlayer.currentTime = (progressBar.value / 100) * videoPlayer.duration;
+            });
+
+            btnPlayPause.addEventListener('click', () => {
+                if (videoPlayer.paused) {
+                    videoPlayer.play();
+                    btnPlayPause.textContent = '⏸️';
+                } else {
+                    videoPlayer.pause();
+                    btnPlayPause.textContent = '▶️';
+                }
+            });
+
+            videoPlayer.addEventListener('play', () => btnPlayPause.textContent = '⏸️');
+            videoPlayer.addEventListener('pause', () => btnPlayPause.textContent = '▶️');
+
+            btnSpeed.addEventListener('click', () => {
+                const speeds = [0.5, 0.75, 1, 1.25, 1.5, 2];
+                const currentIdx = speeds.indexOf(STATE.playerSpeed);
+                const nextIdx = (currentIdx + 1) % speeds.length;
+                STATE.playerSpeed = speeds[nextIdx];
+                videoPlayer.playbackRate = STATE.playerSpeed;
+                btnSpeed.textContent = STATE.playerSpeed + 'x';
+            });
+
+            btnFullscreen.addEventListener('click', () => {
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                } else {
+                    playerContainer.requestFullscreen().catch(() => {});
+                }
+            });
+
+            btnPip.addEventListener('click', async () => {
+                try {
+                    if (document.pictureInPictureElement) {
+                        await document.exitPictureInPicture();
+                    } else {
+                        await videoPlayer.requestPictureInPicture();
+                    }
+                } catch (e) {
+                    showToast('PiP not supported', 'error');
+                }
+            });
+
+            // Double tap seek
+            let lastTap = 0;
+            videoPlayer.addEventListener('click', (e) => {
+                const now = Date.now();
+                if (now - lastTap < 300) {
+                    // Double tap
+                    const rect = videoPlayer.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    if (x < rect.width / 2) {
+                        videoPlayer.currentTime = Math.max(0, videoPlayer.currentTime - 10);
+                    } else {
+                        videoPlayer.currentTime = Math.min(videoPlayer.duration, videoPlayer.currentTime + 10);
+                    }
+                    showToast(x < rect.width / 2 ? '⏪ -10s' : '⏩ +10s', 'info');
+                }
+                lastTap = now;
+            });
+
+            // Show/hide controls
+            let controlsTimeout;
+            playerContainer.addEventListener('mousemove', () => {
+                playerContainer.classList.add('show-controls');
+                clearTimeout(controlsTimeout);
+                controlsTimeout = setTimeout(() => playerContainer.classList.remove('show-controls'), 3000);
+            });
+            playerContainer.addEventListener('touchstart', () => {
+                playerContainer.classList.add('show-controls');
+                clearTimeout(controlsTimeout);
+                controlsTimeout = setTimeout(() => playerContainer.classList.remove('show-controls'), 3000);
+            });
+            playerContainer.classList.add('show-controls');
+
+            // Keyboard controls
+            document.addEventListener('keydown', (e) => {
+                if (!playerOverlay.classList.contains('active')) return;
+                switch (e.key) {
+                    case ' ':
+                        e.preventDefault();
+                        videoPlayer.paused ? videoPlayer.play() : videoPlayer.pause();
+                        break;
+                    case 'ArrowRight':
+                        videoPlayer.currentTime += 5;
+                        break;
+                    case 'ArrowLeft':
+                        videoPlayer.currentTime -= 5;
+                        break;
+                    case 'f':
+                        btnFullscreen.click();
+                        break;
+                    case 'Escape':
+                        $('#player-close').click();
+                        break;
+                }
+            });
+        }
+
+        // Close player with Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && playerOverlay.classList.contains('active')) {
+                $('#player-close')?.click();
+            }
+        });
+
+        // ==================== SEARCH ====================
+        const debouncedSearch = debounce(async (query) => {
+            if (!query || query.length < 2) {
+                if (STATE.currentView === 'search') navigateTo('home');
+                return;
+            }
+            navigateTo('search', { query });
+        }, 400);
+
+        searchInput.addEventListener('input', (e) => {
+            debouncedSearch(e.target.value.trim());
+        });
+
+        async function renderSearchResults(query) {
+            STATE.searchQuery = query;
+            mainContent.style.display = 'block';
+            adminPanel.classList.remove('visible');
+            mainContent.innerHTML = `
+            <div class="section-title"><span class="icon">🔍</span> Results for "${escapeHtml(query)}"</div>
+            <div class="video-grid" id="search-results-grid"></div>
+          `;
+            try {
+                // Simple search by title prefix (Firestore doesn't support full-text search natively)
+                const snapshot = await getDocs(query(collection(db, 'videos'),
+                    where('visibility', '==', 'published'), orderBy('title'), limit(30)));
+                const results = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.title?.toLowerCase().includes(query.toLowerCase()) ||
+                        data.description?.toLowerCase().includes(query.toLowerCase()) ||
+                        data.tags?.toLowerCase().includes(query.toLowerCase())) {
+                        results.push({ id: doc.id, ...data });
+                    }
+                });
+                renderVideoGrid('search-results-grid', results.slice(0, 20));
+                if (results.length === 0) {
+                    $('#search-results-grid').innerHTML =
+                        '<div style="color:var(--text-tertiary);padding:40px;text-align:center;">No results found for "' +
+                        escapeHtml(query) + '"</div>';
+                }
+            } catch (e) {
+                $('#search-results-grid').innerHTML =
+                    '<div style="color:var(--text-tertiary);padding:40px;text-align:center;">Search failed. Try again.</div>';
+            }
+        }
+
+        async function renderCategory(category) {
+            mainContent.style.display = 'block';
+            adminPanel.classList.remove('visible');
+            mainContent.innerHTML = `
+            <div class="section-title"><span class="icon">📂</span> ${escapeHtml(category)} Videos</div>
+            <div class="video-grid" id="category-grid"></div>
+          `;
+            try {
+                const snapshot = await getDocs(query(collection(db, 'videos'),
+                    where('category', '==', category), where('visibility', '==', 'published'),
+                    orderBy('createdAt', 'desc'), limit(20)));
+                const videos = [];
+                snapshot.forEach(doc => videos.push({ id: doc.id, ...doc.data() }));
+                renderVideoGrid('category-grid', videos);
+            } catch (e) {
+                $('#category-grid').innerHTML =
+                    '<div style="color:var(--text-tertiary);padding:40px;">No videos in this category</div>';
+            }
+        }
+
+        // ==================== ADMIN PANEL ====================
+        async function loadAdminStats() {
+            if (!STATE.isAdmin) return;
+            try {
+                const usersSnap = await getDocs(collection(db, 'users'));
+                const videosSnap = await getDocs(collection(db, 'videos'));
+                let totalViews = 0,
+                    totalLikes = 0;
+                videosSnap.forEach(doc => {
+                    totalViews += doc.data().views || 0;
+                    totalLikes += doc.data().likes || 0;
+                });
+                $('#stat-users').textContent = usersSnap.size;
+                $('#stat-videos').textContent = videosSnap.size;
+                $('#stat-views').textContent = formatNumber(totalViews);
+                $('#stat-likes').textContent = formatNumber(totalLikes);
+            } catch (e) {
+                console.error('Admin stats error:', e);
+            }
+        }
+
+        // Upload form
+        $('#upload-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = $('#upload-title')?.value?.trim();
+            const videoFile = $('#upload-video-file')?.files?.[0];
+            const thumbnailFile = $('#upload-thumbnail')?.files?.[0];
+
+            if (!title || !videoFile) return showToast('Title and video file are required', 'error');
+
+            const uploadProgress = $('#upload-progress');
+            const submitBtn = $('#upload-submit-btn');
+            uploadProgress.style.display = 'block';
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Uploading...';
+
+            try {
+                // Upload video
+                const videoRef = ref(storage, `videos/${generateId()}_${videoFile.name}`);
+                const videoUpload = uploadBytesResumable(videoRef, videoFile);
+                let videoUrl = '';
+
+                await new Promise((resolve, reject) => {
+                    videoUpload.on('state_changed',
+                        (snap) => {
+                            uploadProgress.value = (snap.bytesTransferred / snap.totalBytes) * 70;
+                        },
+                        reject,
+                        async () => {
+                            videoUrl = await getDownloadURL(videoUpload.snapshot.ref);
+                            resolve();
+                        });
+                });
+
+                // Upload thumbnail
+                let thumbnailUrl = '';
+                if (thumbnailFile) {
+                    const thumbRef = ref(storage, `thumbnails/${generateId()}_${thumbnailFile.name}`);
+                    const thumbUpload = uploadBytesResumable(thumbRef, thumbnailFile);
+                    await new Promise((resolve, reject) => {
+                        thumbUpload.on('state_changed', null, reject, async () => {
+                            thumbnailUrl = await getDownloadURL(thumbUpload.snapshot.ref);
+                            uploadProgress.value = 90;
+                            resolve();
+                        });
+                    });
+                }
+
+                // Create Firestore document
+                const videoId = generateId();
+                const visibility = $('#upload-visibility')?.value || 'published';
+                const videoData = {
+                    title,
+                    description: $('#upload-desc')?.value || '',
+                    videoUrl,
+                    thumbnailUrl,
+                    category: $('#upload-category')?.value || 'General',
+                    tags: $('#upload-tags')?.value || '',
+                    duration: 0, // Would need server-side calculation
+                    featured: $('#upload-featured')?.checked || false,
+                    trending: $('#upload-trending')?.checked || false,
+                    visibility,
+                    views: 0,
+                    likes: 0,
+                    comments: 0,
+                    createdAt: serverTimestamp(),
+                    uploadedBy: STATE.telegramId,
+                    scheduledAt: visibility === 'scheduled' ? ($('#upload-schedule')?.value || null) : null,
+                };
+
+                await setDoc(doc(db, 'videos', videoId), videoData);
+                uploadProgress.value = 100;
+                showToast('Video uploaded successfully!', 'success');
+                $('#upload-form').reset();
+                uploadProgress.style.display = 'none';
+                loadAdminStats();
+            } catch (error) {
+                console.error('Upload error:', error);
+                showToast('Upload failed: ' + error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🚀 Upload Video';
+            }
+        });
+
+        // Visibility change -> show/hide schedule input
+        $('#upload-visibility')?.addEventListener('change', function() {
+            $('#upload-schedule').style.display = this.value === 'scheduled' ? 'block' : 'none';
+        });
+
+        // Save ad settings
+        $('#save-ad-settings')?.addEventListener('click', async () => {
+            const adData = {
+                prerollAdCode: $('#ad-preroll')?.value || '',
+                midrollAdCode: $('#ad-midroll')?.value || '',
+                bannerAdCode: $('#ad-banner')?.value || '',
+                stickyAdCode: $('#ad-sticky')?.value || '',
+                adFrequency: parseInt($('#ad-frequency')?.value || '15'),
+                prerollAdEnabled: true,
+                stickyAdEnabled: true,
+                updatedAt: serverTimestamp(),
+            };
+            await setDoc(doc(db, 'settings', 'ads'), adData);
+            STATE.adSettings = adData;
+            renderAds();
+            showToast('Ad settings saved!', 'success');
+        });
+
+        // Load ad settings into admin form
+        async function loadAdSettingsToForm() {
+            const adDoc = await getDoc(doc(db, 'settings', 'ads'));
+            if (adDoc.exists()) {
+                const data = adDoc.data();
+                if ($('#ad-preroll')) $('#ad-preroll').value = data.prerollAdCode || '';
+                if ($('#ad-midroll')) $('#ad-midroll').value = data.midrollAdCode || '';
+                if ($('#ad-banner')) $('#ad-banner').value = data.bannerAdCode || '';
+                if ($('#ad-sticky')) $('#ad-sticky').value = data.stickyAdCode || '';
+                if ($('#ad-frequency')) $('#ad-frequency').value = data.adFrequency || 15;
+            }
+        }
+
+        // ==================== INITIALIZATION ====================
+        async function initApp() {
+            try {
+                await initTelegramAuth();
+                await loadAdSettings();
+                await loadAdSettingsToForm();
+                navigateTo('home');
+            } catch (error) {
+                console.error('Init error:', error);
+                navigateTo('home');
+            } finally {
+                // Hide loading screen
+                setTimeout(() => {
+                    loadingScreen.classList.add('hidden');
+                }, 600);
+            }
+        }
+
+        // Handle URL params (deep link for video)
+        function handleDeepLink() {
+            const params = new URLSearchParams(window.location.search);
+            const videoId = params.get('video');
+            if (videoId && STATE.telegramId) {
+                navigateTo('video-detail', { videoId });
+            }
+        }
+
+        // Start the app
+        document.addEventListener('DOMContentLoaded', () => {
+            initApp().then(() => {
+                handleDeepLink();
+            });
+        });
+
+        // Service Worker registration for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(() => {
+                    console.log('Service worker registration skipped (offline or unsupported)');
+                });
+            });
+        }
+
+        // Export for debugging
+        window.STATE = STATE;
+        window.navigateTo = navigateTo;
+        window.showToast = showToast;
+
+        console.log('🎬 VidStream Pro initialized');
+        console.log('📱 Telegram Mini App Video Platform');
+        console.log('🔐 Auth:', STATE.telegramId ? 'Authenticated' : 'Pending');
+        console.log('👑 Admin:', STATE.isAdmin ? 'Yes' : 'No');
+    </script>
+
+    <!-- Manifest for PWA -->
+    <script>
+        if (!document.querySelector('link[rel="manifest"]')) {
+            const manifest = {
+                name: 'VidStream Pro',
+                short_name: 'VidStream',
+                description: 'Premium Video Platform',
+                start_url: '/',
+                display: 'standalone',
+                background_color: '#0a0a0a',
+                theme_color: '#ff3b5c',
+                icons: [{ src: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>',
+                    sizes: '100x100', type: 'image/svg+xml' }]
+            };
+            const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+            const link = document.createElement('link');
+            link.rel = 'manifest';
+            link.href = URL.createObjectURL(blob);
+            document.head.appendChild(link);
+        }
+    </script>
+</body>
+</html>
